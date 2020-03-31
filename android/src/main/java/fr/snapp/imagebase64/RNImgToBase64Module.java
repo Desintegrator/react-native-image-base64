@@ -33,7 +33,7 @@ public class RNImgToBase64Module extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void getBase64String(String uri, Promise promise) {
+  public void getBase64String(String uri, String format, Promise promise) {
     Bitmap image = null;
     try {
       if (uri.contains("http")) {
@@ -44,7 +44,7 @@ public class RNImgToBase64Module extends ReactContextBaseJavaModule {
       if (image == null) {
         promise.reject("Error", "Failed to decode Bitmap, uri: " + uri);
       } else {
-        promise.resolve(bitmapToBase64(image));
+        promise.resolve(bitmapToBase64(image, format));
       }
     } catch (Error e) {
       promise.reject("Error", "Failed to decode Bitmap: " + e);
@@ -70,9 +70,29 @@ public class RNImgToBase64Module extends ReactContextBaseJavaModule {
     }
   }
 
-  private String bitmapToBase64(Bitmap bitmap) {
+  private String bitmapToBase64(Bitmap bitmap, String format) {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+    if (format != null && !format.equals("")) {
+      switch(format) {
+          case "JPEG":
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+            break;
+          case "JPG":
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+            break;
+          case "PNG":
+            bitmap.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
+            break;
+          case "WEBP":
+            bitmap.compress(Bitmap.CompressFormat.WEBP, 80, byteArrayOutputStream);
+            break;
+          default:
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+            break;
+      }
+    } else {
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+    }
     byte[] byteArray = byteArrayOutputStream.toByteArray();
     return Base64.encodeToString(byteArray, Base64.DEFAULT);
   }
